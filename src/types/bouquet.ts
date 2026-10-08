@@ -62,4 +62,4 @@ export interface GeneratedBouquet {
   palette: FlowerPalette;
 }
 
-export type AppState = 'opening' | 'main' | 'success';
+export type AppState = 'opening' | 'main' | 'success' | 'rejected';

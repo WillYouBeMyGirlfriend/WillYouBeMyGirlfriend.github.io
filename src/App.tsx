@@ -1,12 +1,14 @@
 // ── App Root ──
-// Manages overall state: opening → main → success
+// Manages overall state: opening → main → success / rejected
 
 import { useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import OpeningScreen from './components/OpeningScreen';
 import MainScreen from './components/MainScreen';
 import SuccessOverlay from './components/SuccessOverlay';
+import RejectionOverlay from './components/RejectionOverlay';
 import PetalEffect from './components/PetalEffect';
+import BackgroundMusic from './components/BackgroundMusic';
 import type { AppState } from './types/bouquet';
 
 export default function App() {
@@ -20,8 +22,13 @@ export default function App() {
     setState('success');
   }, []);
 
+  const handleNo = useCallback(() => {
+    setState('rejected');
+  }, []);
+
   return (
     <>
+      <BackgroundMusic shouldPlay={state !== 'opening'} />
       <PetalEffect />
       <AnimatePresence mode="wait">
         {state === 'opening' && (
@@ -30,10 +37,11 @@ export default function App() {
       </AnimatePresence>
       <AnimatePresence>
         {state === 'main' && (
-          <MainScreen key="main" onYes={handleYes} />
+          <MainScreen key="main" onYes={handleYes} onNo={handleNo} />
         )}
       </AnimatePresence>
       <SuccessOverlay visible={state === 'success'} />
+      <RejectionOverlay visible={state === 'rejected'} />
     </>
   );
 }

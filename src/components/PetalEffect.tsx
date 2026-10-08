@@ -23,6 +23,7 @@ export default function PetalEffect() {
   const animFrameRef = useRef<number>(0);
   const idRef = useRef(0);
   const isMobile = useRef(false);
+  const lastSpawnRef = useRef({ x: -100, y: -100 });
 
   const updateCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -36,7 +37,7 @@ export default function PetalEffect() {
 
     for (let i = petals.length - 1; i >= 0; i--) {
       const p = petals[i];
-      p.life -= 0.008;
+      p.life -= 0.006;
       if (p.life <= 0) {
         petals.splice(i, 1);
         continue;
@@ -48,23 +49,23 @@ export default function PetalEffect() {
       p.rotation += p.vRotation;
       p.vx *= 0.98;
       p.vy *= 0.98;
-      p.opacity = p.life * 0.6;
+      p.opacity = p.life * 0.85;
 
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rotation);
       ctx.globalAlpha = p.opacity;
 
-      // Draw tiny petal shape
+      // Draw tiny heart shape
       const s = p.size;
-      ctx.fillStyle = '#F4BCC8';
+      const w = s;
+      const h = s * 0.9;
+      ctx.fillStyle = '#F4A0B0';
       ctx.beginPath();
-      ctx.ellipse(0, 0, s, s * 0.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#F9D5DC';
-      ctx.beginPath();
-      ctx.ellipse(s * 0.3, -s * 0.1, s * 0.4, s * 0.3, 0.3, 0, Math.PI * 2);
+      ctx.moveTo(0, h * 0.3);
+      ctx.bezierCurveTo(-w * 0.5, -h * 0.1, -w * 0.5, -h * 0.6, 0, -h * 0.5);
+      ctx.bezierCurveTo(w * 0.5, -h * 0.6, w * 0.5, -h * 0.1, 0, h * 0.3);
+      ctx.closePath();
       ctx.fill();
 
       ctx.restore();
@@ -90,22 +91,26 @@ export default function PetalEffect() {
     const onMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
 
-      // Spawn petals
+      // Distance throttle — only spawn when mouse has moved enough
+      const dx = e.clientX - lastSpawnRef.current.x;
+      const dy = e.clientY - lastSpawnRef.current.y;
+      if (Math.sqrt(dx * dx + dy * dy) < 14) return;
+      lastSpawnRef.current = { x: e.clientX, y: e.clientY };
+
+      // Spawn hearts
       const petals = petalsRef.current;
-      if (petals.length < 25) {
-        petals.push({
-          id: idRef.current++,
-          x: e.clientX,
-          y: e.clientY,
-          vx: (Math.random() - 0.5) * 0.6,
-          vy: (Math.random() - 0.5) * 0.6 - 0.3,
-          rotation: Math.random() * Math.PI * 2,
-          vRotation: (Math.random() - 0.5) * 0.05,
-          opacity: 0.6,
-          size: 4 + Math.random() * 6,
-          life: 1,
-        });
-      }
+      petals.push({
+        id: idRef.current++,
+        x: e.clientX,
+        y: e.clientY,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6 - 0.3,
+        rotation: Math.random() * Math.PI * 2,
+        vRotation: (Math.random() - 0.5) * 0.05,
+        opacity: 0.85,
+        size: 8 + Math.random() * 12,
+        life: 1,
+      });
     };
 
     window.addEventListener('mousemove', onMove);

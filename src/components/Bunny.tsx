@@ -28,7 +28,7 @@ export default function Bunny({ mood, visible }: BunnyProps) {
       }}
       transition={{ type: 'spring', stiffness: 400, damping: 18 }}
     >
-      <svg viewBox="0 0 60 70" style={{ width: '100%', height: '100%' }}>
+      <svg viewBox="0 -8 60 78" style={{ width: '100%', height: '100%' }}>
         {/* Body */}
         <ellipse cx={30} cy={48} rx={16} ry={18} fill="#FFF8F0" stroke="#E8D5C8" strokeWidth={1.5} />
 

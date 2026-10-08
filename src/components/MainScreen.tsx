@@ -12,9 +12,10 @@ import { generateBouquet } from './BouquetGenerator';
 
 interface MainScreenProps {
   onYes: () => void;
+  onNo: () => void;
 }
 
-export default function MainScreen({ onYes }: MainScreenProps) {
+export default function MainScreen({ onYes, onNo }: MainScreenProps) {
   const [hoverState, setHoverState] = useState<'none' | 'yes' | 'no'>('none');
   const [hoverIntensity, setHoverIntensity] = useState(0);
   const hoverIntensityRef = useRef(0);
@@ -207,6 +208,7 @@ export default function MainScreen({ onYes }: MainScreenProps) {
         <motion.button
           onMouseEnter={() => startHover('no')}
           onMouseLeave={() => endHover()}
+          onClick={onNo}
           style={{
             fontFamily: "'Playfair Display', Georgia, serif",
             fontSize: 'clamp(16px, 2vw, 20px)',

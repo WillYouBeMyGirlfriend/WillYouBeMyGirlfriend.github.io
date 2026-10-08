@@ -11,11 +11,11 @@ interface CloudsProps {
 
 const MAX_CLOUDS = 8;
 
-// Deterministic-ish positions using index-based math
+// Deterministic-ish positions using index-based math — spread across the full top
 const CLOUD_DATA = Array.from({ length: MAX_CLOUDS }, (_, i) => ({
   id: i,
-  x: 30 + ((i * 53) % 55),
-  y: 5 + ((i * 29) % 15),
+  x: 5 + ((i * 41) % 90),
+  y: 3 + ((i * 29) % 18),
   scale: 0.5 + ((i * 37) % 60) / 100,
   opacity: 0.12 + ((i * 23) % 25) / 100,
   delay: ((i * 17) % 80) / 100,

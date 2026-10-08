@@ -3,6 +3,7 @@
 
 import { motion } from 'framer-motion';
 import EdgeFlowers from './EdgeFlowers';
+import HeartEffect from './HeartEffect';
 
 interface SuccessOverlayProps {
   visible: boolean;
@@ -38,6 +39,9 @@ export default function SuccessOverlay({ visible }: SuccessOverlayProps) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       />
+
+      {/* Floating hearts across the screen */}
+      <HeartEffect active={visible} />
 
       {/* Edge celebration flowers */}
       <EdgeFlowers count={35} active={visible} />
@@ -92,27 +96,6 @@ export default function SuccessOverlay({ visible }: SuccessOverlayProps) {
           <br />
           YOU TOO
         </motion.h1>
-
-        {/* Small heart decoration */}
-        <motion.div
-          style={{
-            position: 'absolute',
-            bottom: -18,
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.8, type: 'spring', stiffness: 300 }}
-        >
-          <svg width={36} height={36} viewBox="0 0 36 36">
-            <path
-              d="M18,30 C10,22 2,16 2,10 C2,5 6,2 10,2 C13,2 16,4 18,7 C20,4 23,2 26,2 C30,2 34,5 34,10 C34,16 26,22 18,30Z"
-              fill="#F4A0B0"
-              opacity={0.8}
-            />
-          </svg>
-        </motion.div>
       </motion.div>
     </motion.div>
   );
