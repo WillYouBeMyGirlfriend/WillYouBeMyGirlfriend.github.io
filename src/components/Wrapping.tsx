@@ -22,8 +22,8 @@ export default function Wrapping({ path, ribbon, palette }: WrappingProps) {
       <path
         d={path}
         fill={palette.cream}
-        stroke="#E8D5C8"
-        strokeWidth={0.003}
+        stroke="#DDC8BB"
+        strokeWidth={0.005}
       />
       {/* Paper fold lines for texture */}
       <path

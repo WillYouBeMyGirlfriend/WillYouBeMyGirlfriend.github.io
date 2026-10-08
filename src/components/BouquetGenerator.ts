@@ -98,10 +98,10 @@ export function generateBouquet(): GeneratedBouquet {
   const silhouette = generateSilhouette();
 
   // Determine flower counts
-  const tulipCount = randomInt(5, 9);
-  const peonyCount = randomInt(3, 5);
-  const lilyCount = randomInt(3, 5);
-  const foliageCount = randomInt(14, 22);
+  const tulipCount = randomInt(4, 6);
+  const peonyCount = randomInt(2, 3);
+  const lilyCount = randomInt(2, 3);
+  const foliageCount = randomInt(10, 14);
 
   const flowers: FlowerInstance[] = [];
   let idCounter = 0;
@@ -179,20 +179,24 @@ export function generateBouquet(): GeneratedBouquet {
     return null;
   }
 
-  // ── Layer 1: Rear Foliage ──
-  const rearFoliageCount = Math.floor(foliageCount * 0.4);
+  // ── Layer 1: Rear Foliage (behind everything, along stem area) ──
+  const rearFoliageCount = Math.floor(foliageCount * 0.6);
   for (let i = 0; i < rearFoliageCount; i++) {
-    const x = bouquetCX + randomRange(-0.35, 0.35);
-    const y = bouquetCY + randomRange(-0.35, 0.3);
-    if (!insideSilhouette(x, y, -0.05)) continue;
+    // Place foliage in the middle-lower area, close to where stems converge
+    // and radiating outward along stem-like rays
+    const stemAngle = random() * Math.PI * 2;
+    const stemRadius = randomRange(0.05, 0.25);
+    const x = bouquetCX + Math.cos(stemAngle) * stemRadius;
+    const y = bouquetCY + Math.sin(stemAngle) * stemRadius * 0.7 + randomRange(-0.05, 0.15);
+    if (!insideSilhouette(x, y, -0.02)) continue;
 
     flowers.push({
       id: `foliage-r-${idCounter++}`,
       type: 'foliage',
       x,
       y,
-      scale: randomRange(0.7, 1.2),
-      rotation: randomRange(-40, 40),
+      scale: randomRange(0.55, 0.9),
+      rotation: randomRange(-30, 30),
       depthLayer: 0,
       color: randomChoice(palette.foliageColors),
       colorAlt: randomChoice(palette.foliageColors),
@@ -209,8 +213,8 @@ export function generateBouquet(): GeneratedBouquet {
       rx: 0.28,
       ry: 0.22,
     };
-    const pos = tryPlaceFlower('peony', region, 0.14, [
-      ...flowers,
+    const pos = tryPlaceFlower('peony', region, 0.22, [
+      ...flowers.filter((f) => f.type !== 'foliage'),
       ...peonyFlowers,
     ]);
     if (!pos) continue;
@@ -231,34 +235,23 @@ export function generateBouquet(): GeneratedBouquet {
     flowers.push(flower);
   }
 
-  // ── Layer 3: Middle Foliage ──
-  const midFoliageCount = Math.floor(foliageCount * 0.35);
+  // ── Layer 3: Middle Foliage (between flowers, along stems) ──
+  const midFoliageCount = Math.floor(foliageCount * 0.25);
   for (let i = 0; i < midFoliageCount; i++) {
-    const angle = randomRange(0, Math.PI * 2);
-    const radius = randomRange(0.05, 0.32);
-    const x = bouquetCX + Math.cos(angle) * radius;
-    const y = bouquetCY + Math.sin(angle) * radius;
-    if (!insideSilhouette(x, y, -0.03)) continue;
-
-    // Check not too close to peonies
-    let tooClose = false;
-    for (const p of peonyFlowers) {
-      const dx = x - p.x;
-      const dy = y - p.y;
-      if (Math.sqrt(dx * dx + dy * dy) < 0.1) {
-        tooClose = true;
-        break;
-      }
-    }
-    if (tooClose) continue;
+    // Place foliage between the convergence point and flowers
+    const stemAngle = random() * Math.PI * 2;
+    const stemRadius = randomRange(0.08, 0.22);
+    const x = bouquetCX + Math.cos(stemAngle) * stemRadius;
+    const y = bouquetCY + Math.sin(stemAngle) * stemRadius * 0.7 + randomRange(0.0, 0.12);
+    if (!insideSilhouette(x, y, -0.02)) continue;
 
     flowers.push({
       id: `foliage-m-${idCounter++}`,
       type: 'foliage',
       x,
       y,
-      scale: randomRange(0.6, 1.0),
-      rotation: randomRange(-50, 50),
+      scale: randomRange(0.45, 0.8),
+      rotation: randomRange(-30, 30),
       depthLayer: 1,
       color: randomChoice(palette.foliageColors),
       colorAlt: randomChoice(palette.foliageColors),
@@ -266,23 +259,21 @@ export function generateBouquet(): GeneratedBouquet {
     });
   }
 
-  // ── Layer 4: Lilies (distinctive accent flowers) ──
+  // ── Layer 4: Lilies (edges, spread out) ──
   const lilyFlowers: FlowerInstance[] = [];
   for (let i = 0; i < lilyCount; i++) {
-    // Lilies go around the edges, extending slightly beyond
     const angle = randomRange(0, Math.PI * 2);
-    const radius = randomRange(0.12, 0.3);
+    const radius = randomRange(0.15, 0.3);
     const x = bouquetCX + Math.cos(angle) * radius;
     const y = bouquetCY + Math.sin(angle) * radius;
-    if (!insideSilhouette(x, y, -0.06)) continue;
+    if (!insideSilhouette(x, y, -0.04)) continue;
 
     let tooClose = false;
-    const allExisting = [...flowers, ...lilyFlowers];
+    const allExisting = [...flowers.filter((f) => f.type !== 'foliage'), ...lilyFlowers];
     for (const f of allExisting) {
-      if (f.type === 'foliage') continue;
       const dx = x - f.x;
       const dy = y - f.y;
-      if (Math.sqrt(dx * dx + dy * dy) < 0.09) {
+      if (Math.sqrt(dx * dx + dy * dy) < 0.16) {
         tooClose = true;
         break;
       }
@@ -308,8 +299,8 @@ export function generateBouquet(): GeneratedBouquet {
   // ── Layer 5: Tulips (vertical accent clusters) ──
   const tulipFlowers: FlowerInstance[] = [];
 
-  // Generate 2-3 clusters for tulips
-  const numClusters = randomInt(2, 3);
+  // Generate 2 clusters for tulips
+  const numClusters = 2;
   type Cluster = { cx: number; cy: number };
   const clusters: Cluster[] = [];
 
@@ -344,7 +335,7 @@ export function generateBouquet(): GeneratedBouquet {
         if (f.type === 'foliage') continue;
         const dx = x - f.x;
         const dy = y - f.y;
-        if (Math.sqrt(dx * dx + dy * dy) < 0.07) {
+        if (Math.sqrt(dx * dx + dy * dy) < 0.12) {
           tooClose = true;
           break;
         }
@@ -356,7 +347,7 @@ export function generateBouquet(): GeneratedBouquet {
         type: 'tulip',
         x,
         y,
-        scale: randomRange(0.7, 1.05),
+        scale: randomRange(0.6, 0.9),
         rotation: randomRange(-12, 12),
         depthLayer: 2,
         color: randomChoice(palette.tulipColors),
@@ -376,7 +367,7 @@ export function generateBouquet(): GeneratedBouquet {
       rx: 0.25,
       ry: 0.2,
     };
-    const pos = tryPlaceFlower('tulip', region, 0.07, [
+    const pos = tryPlaceFlower('tulip', region, 0.12, [
       ...flowers.filter((f) => f.type !== 'foliage'),
       ...tulipFlowers,
     ]);
@@ -387,7 +378,7 @@ export function generateBouquet(): GeneratedBouquet {
       type: 'tulip',
       x: pos.x,
       y: pos.y,
-      scale: randomRange(0.7, 1.05),
+      scale: randomRange(0.6, 0.9),
       rotation: randomRange(-12, 12),
       depthLayer: 2,
       color: randomChoice(palette.tulipColors),
@@ -398,22 +389,22 @@ export function generateBouquet(): GeneratedBouquet {
     flowers.push(flower);
   }
 
-  // ── Layer 6: Front Foliage (edge peek-through) ──
+  // ── Layer 6: Front Foliage (lower zone, near stems) ──
   const frontFoliageCount = foliageCount - rearFoliageCount - midFoliageCount;
   for (let i = 0; i < frontFoliageCount; i++) {
-    const angle = randomRange(0, Math.PI * 2);
-    const radius = randomRange(0.08, 0.33);
-    const x = bouquetCX + Math.cos(angle) * radius;
-    const y = bouquetCY + Math.sin(angle) * radius;
-    if (!insideSilhouette(x, y, -0.04)) continue;
+    const stemAngle = random() * Math.PI * 2;
+    const stemRadius = randomRange(0.03, 0.18);
+    const x = bouquetCX + Math.cos(stemAngle) * stemRadius;
+    const y = bouquetCY + Math.sin(stemAngle) * stemRadius * 0.6 + randomRange(0.03, 0.18);
+    if (!insideSilhouette(x, y, -0.02)) continue;
 
     flowers.push({
       id: `foliage-f-${idCounter++}`,
       type: 'foliage',
       x,
       y,
-      scale: randomRange(0.5, 0.9),
-      rotation: randomRange(-35, 35),
+      scale: randomRange(0.4, 0.7),
+      rotation: randomRange(-25, 25),
       depthLayer: 2,
       color: randomChoice(palette.foliageColors),
       colorAlt: randomChoice(palette.foliageColors),
@@ -428,7 +419,7 @@ export function generateBouquet(): GeneratedBouquet {
   const stems: StemData[] = [];
   const convergenceX = bouquetCX + randomRange(-0.02, 0.02);
   const convergenceY = bouquetCY + bouquetH * 0.52;
-  const flowerTypesForStems: string[] = ['tulip', 'peony', 'lily'];
+  const flowerTypesForStems: string[] = ['tulip', 'peony', 'lily', 'foliage'];
 
   for (const flower of flowers) {
     if (!flowerTypesForStems.includes(flower.type)) continue;
